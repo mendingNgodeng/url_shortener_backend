@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String           @id @default(auto()) @map("_id") @db.ObjectId
+  username    String           @unique
+  password    String
+  role        String           @default("user")
+  email       String           @unique
+  createdAt   DateTime         @default(now())
+  urls        UrlShortener[]
+  histories   History[]       
+}
+
+model UrlShortener {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String    @db.ObjectId
+  user      User      @relation(fields: [userId], references: [id])
+  
+  originalUrl String
+  shortCode   String   @unique
+  clicks      Int       @default(0)
+  createdAt   DateTime  @default(now())
+  expirationDate DateTime?
+  history     History[]
+}
+
+model History {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+
+  userId      String   @db.ObjectId
+  urlId       String   @db.ObjectId
+  
+  user        User          @relation(fields: [userId], references: [id])
+  url         UrlShortener  @relation(fields: [urlId], references: [id])
+  userAgent String?
+  ip        String?
+  clickedAt   DateTime @default(now())
+}
