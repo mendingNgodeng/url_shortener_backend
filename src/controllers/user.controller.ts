@@ -4,7 +4,8 @@ import { updateProfile, updatePass } from '../validation/user.validation';
 
 export default class user_controller {
   static async list(c: Context) {
-    const users = await userService.getAllUsers();
+    const id = c.get('userId');
+    const users = await userService.getAllUsers(id);
     return c.json(users);
   }
 
@@ -58,6 +59,16 @@ export default class user_controller {
     const { id } = c.req.param();
 
     await userService.deleteUser(id);
+
+    return c.json({ message: 'User berhasil dihapus' });
+  }
+
+  static async deleteUserByAdmin(c: Context) {
+    const { id } = c.req.param();
+
+    if (!id) {
+      return c.json({ error: 'ID user tidak diberikan' }, 400);
+    }
 
     return c.json({ message: 'User berhasil dihapus' });
   }

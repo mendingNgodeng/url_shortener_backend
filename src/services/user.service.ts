@@ -3,11 +3,16 @@ import { hashPassword } from '../utils/hash';
 import bycrypt from 'bcryptjs';
 
 export const userService = {
-  async getAllUsers() {
+  async getAllUsers(user_id: string) {
     return prisma.user.findMany({
-      include: {
+      select: {
+        id: true,
+        username: true,
+        role: true,
+        createdAt: true,
         _count: { select: { urls: true } },
       },
+      where: { id: { not: user_id } },
     });
   },
 
@@ -53,11 +58,11 @@ export const userService = {
   },
 
   async updatePassword(id: string, newPassword: string) {
-     const user = await prisma.user.findUnique({ where: { id } });
+    const user = await prisma.user.findUnique({ where: { id } });
 
-  if (!user) {
-    throw new Error("User tidak ditemukan");
-  }
+    if (!user) {
+      throw new Error('User tidak ditemukan');
+    }
     const hashed = await hashPassword(newPassword);
     return prisma.user.update({
       where: { id },

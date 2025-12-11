@@ -3,13 +3,8 @@ import {
   BLOCKED_REGEX,
   BLOCKED_WILDCARD,
   SUSPICIOUS_TLDS,
+  DANGEROUS_DOMAIN_PATTERNS,
 } from './urlWords';
-
-const DANGEROUS_DOMAIN_PATTERNS = [
-  /\d{4,}/, // domain berisi angka terlalu banyak
-  /(--|\.\.)/, // domain suspicious
-  /(free|bonus|claim)/i, // spam words
-];
 
 export async function checkURLSafety(url: string, googleApiKey?: string) {
   const lower = url.toLowerCase();

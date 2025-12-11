@@ -38,4 +38,11 @@ users.delete(
   user_controller.delete
 );
 
+// admin delete account
+users.delete(
+  '/a/:id',
+  authMiddleware,
+  requireRole('admin'),
+  user_controller.delete
+);
 export default users;

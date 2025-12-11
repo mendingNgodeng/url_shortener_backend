@@ -101,3 +101,9 @@ export const SUSPICIOUS_TLDS = [
   'live',
   'fun',
 ];
+
+export const DANGEROUS_DOMAIN_PATTERNS = [
+  /\d{4,}/, // domain berisi angka terlalu banyak
+  /(--|\.\.)/, // domain suspicious
+  /(free|bonus|claim)/i, // spam words
+];
