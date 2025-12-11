@@ -61,6 +61,11 @@ export class UrlController {
       );
     }
 
+    // Validasi expired default + minimal
+    const now = new Date();
+    const minimalExpireMs = 3 * 60 * 60 * 1000; // 3 JAM
+    const defaultExpireMs = 7 * 24 * 60 * 60 * 1000; // 7 HARI
+    // const maxExpireMs = 30 * 24 * 60 * 60 * 1000; // 30 HARI (opsional)
     // 3. Ambil user dari JWT
     const user = c.get('user');
 
@@ -72,6 +77,44 @@ export class UrlController {
       expirationDate: data.expirationDate ?? null,
       clicks: 0,
     };
+    let expirationDate: Date;
+
+    if (!data.expirationDate) {
+      // CASE A: USER TIDAK ISI → DEFAULT 7 HARI
+      expirationDate = new Date(now.getTime() + defaultExpireMs);
+    } else {
+      // B: USER MENGISI → NORMALISASI + VALIDASI MINIMAL
+      const rawLocal = new Date(data.expirationDate);
+
+      // Koreksi timezone (datetime-local TIDAK punya timezone)
+      expirationDate = new Date(
+        rawLocal.getTime() - rawLocal.getTimezoneOffset() * 60000
+      );
+
+      const minAllowed = new Date(now.getTime() + minimalExpireMs);
+
+      if (expirationDate < minAllowed) {
+        return c.json(
+          {
+            status: 'error',
+            message: 'Expired minimal harus 3 jam dari sekarang.',
+          },
+          400
+        );
+      }
+
+      // Opsional: validasi maksimal 30 hari
+      //   const maxAllowed = new Date(now.getTime() + maxExpireMs);
+      //   if (expirationDate > maxAllowed) {
+      //     return c.json(
+      //       {
+      //         status: 'error',
+      //         message: 'Expired maksimal hanya 30 hari dari sekarang.',
+      //       },
+      //       400
+      //     );
+      //   }
+    }
 
     // 5. Simpan ke database
     const created = await url_shortener_service.create(payload);
@@ -116,7 +159,7 @@ export class UrlController {
       c.req.header('x-forwarded-for') ||
       c.req.raw?.headers.get('x-real-ip') ||
       c.req.raw?.headers.get('CF-Connecting-IP') ||
-      '182.2.68.235'; // for test
+      '8.8.8.8'; // for test
     if (ip.includes(',')) ip = ip.split(',')[0];
 
     // location geo
