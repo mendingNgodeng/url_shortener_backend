@@ -41,5 +41,12 @@ model History {
   url         UrlShortener  @relation(fields: [urlId], references: [id])
   userAgent String?
   ip        String?
+
+  country     String?
+  city        String?
+  browser     String?
+  os          String?
+  device      String?
+  referer     String?
   clickedAt   DateTime @default(now())
 }

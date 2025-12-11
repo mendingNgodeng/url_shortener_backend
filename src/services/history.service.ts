@@ -1,4 +1,5 @@
 import { prisma } from '../models/prisma';
+
 // import { ObjectId } from 'hono/mongodb';
 
 export class HistoryService {
@@ -6,7 +7,13 @@ export class HistoryService {
     userId: string;
     urlId: string;
     ip?: string;
+    country: string;
+    city: string;
+    device: string;
+    os: string;
+    browser: string;
     userAgent?: string;
+    referer?: string;
   }) {
     return prisma.history.create({
       data: {

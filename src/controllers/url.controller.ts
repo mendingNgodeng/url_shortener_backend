@@ -1,6 +1,8 @@
 import { url_shortener_service } from '../services/url.service';
 import { HistoryService } from '../services/history.service';
 import { Context } from 'hono';
+import { locationUp } from '../utils/geo';
+import { parseUA } from '../utils/ua';
 import { urlSchema } from '../validation/url.validation';
 
 export class UrlController {
@@ -109,15 +111,31 @@ export class UrlController {
     // add clicks
     await url_shortener_service.incrementClicks(url.id);
 
+    // ambil IP
+    let ip =
+      c.req.header('x-forwarded-for') ||
+      c.req.raw?.headers.get('x-real-ip') ||
+      c.req.raw?.headers.get('CF-Connecting-IP') ||
+      '182.2.68.235'; // for test
+    if (ip.includes(',')) ip = ip.split(',')[0];
+
+    // location geo
+    const geo = await locationUp(ip);
+
+    // user agent
+    const ua = parseUA(c.req.header('User-Agent') || '');
     // add to history
     await HistoryService.create({
       userId: url.userId,
       urlId: url.id,
-      ip:
-        c.req.header('x-forwarded-for') ||
-        c.req.raw?.headers.get('x-real-ip') ||
-        'unknown',
-      userAgent: c.req.header('User-Agent') || 'unknown',
+      ip,
+      userAgent: c.req.header('User-Agent'),
+      referer: c.req.header('Referer'),
+      country: geo.country,
+      city: geo.city,
+      device: ua.device ?? 'unknown',
+      os: ua.os ?? 'unknown',
+      browser: ua.browser ?? 'unknown',
     });
     // redirect to original link
     return c.redirect(url.originalUrl, 302);
