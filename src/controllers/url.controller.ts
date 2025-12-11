@@ -4,7 +4,9 @@ import { Context } from 'hono';
 import { locationUp } from '../utils/geo';
 import { parseUA } from '../utils/ua';
 import { urlSchema } from '../validation/url.validation';
-
+// import { containsBlockedKeyword } from '../utils/blocked.keywords';
+// import { checkWithGoogleSafeBrowsing } from '../utils/safe.browsing';
+import { checkURLSafety } from '../utils/urlSafe';
 export class UrlController {
   static async getAll(c: Context) {
     const user = c.get('user');
@@ -98,6 +100,46 @@ export class UrlController {
           {
             status: 'error',
             message: 'Expired minimal harus 3 jam dari sekarang.',
+          },
+          400
+        );
+      }
+
+      // if (containsBlockedKeyword(data.originalUrl)) {
+      //   return c.json(
+      //     {
+      //       status: 'error',
+      //       message: 'URL tidak diperbolehkan (mengandung konten terlarang).',
+      //     },
+      //     400
+      //   );
+      // }
+
+      // // Google Safe Browsing scan (malware/phishing)
+      // const gs = await checkWithGoogleSafeBrowsing(data.originalUrl);
+
+      // if (!gs.safe) {
+      //   return c.json(
+      //     {
+      //       status: 'error',
+      //       message: 'Google Safe Browsing mendeteksi URL tidak aman!',
+      //       detail: gs.matches,
+      //     },
+      //     400
+      //   );
+      // }
+
+      // yes anotehr but with regex on
+      const safety = await checkURLSafety(
+        data.originalUrl,
+        process.env.GOOGLE_API_SAFE_BROWSING
+      );
+
+      if (!safety.safe) {
+        return c.json(
+          {
+            status: 'error',
+            message: `URL diblokir karena tidak aman:${safety.reason}`,
           },
           400
         );
