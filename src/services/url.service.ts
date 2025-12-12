@@ -76,6 +76,13 @@ export class url_shortener_service {
   static async getByUserId(userId: string) {
     return prisma.urlShortener.findMany({
       where: { userId },
+      include: {
+        user: {
+          select: {
+            username: true,
+          },
+        },
+      },
     });
   }
 }

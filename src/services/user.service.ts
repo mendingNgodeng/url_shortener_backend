@@ -20,6 +20,7 @@ export const userService = {
     return prisma.user.findUnique({
       where: { id },
       include: {
+        // urls: true,
         _count: { select: { urls: true } },
       },
     });
