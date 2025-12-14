@@ -16,7 +16,7 @@ export const authMiddleware = async (c: Context, next: Next) => {
     // console.log('JWT USER:', c.get('user'));
     await next();
   } catch (e) {
-    return c.json({ error: 'token invalid' }, 401);
+    return c.json({ error: 'token invalid. Bukan Punya anda' }, 401);
   }
 };
 

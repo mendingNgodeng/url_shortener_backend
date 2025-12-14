@@ -32,13 +32,16 @@ export class url_shortener_service {
     });
 
     if (!url) {
-      throw new Error('URL tidak ditemukan atau bukan milik user.');
+      throw {
+        status: 401,
+        message: 'URL tidak ditemukan atau bukan milik user',
+      };
     }
     await prisma.history.deleteMany({
       where: { urlId: id },
     });
 
-    // Step 2: hapus URL milik user
+    // hapus URL milik user
     const deleted = await prisma.urlShortener.deleteMany({
       where: { id, userId },
     });
